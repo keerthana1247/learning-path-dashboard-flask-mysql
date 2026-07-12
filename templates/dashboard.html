@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Progress overview</span>
+    <h1>Hi {{ current_user.name.split(' ')[0] }}, here's where you stand</h1>
+  </div>
+  <a href="{{ url_for('learning_path.learning_path') }}" class="btn btn-primary">View my learning path</a>
+</div>
+
+<div class="grid grid-4" style="margin-bottom:24px;">
+  <div class="card stat-card">
+    <div class="stat-label">Courses Enrolled</div>
+    <div class="stat-value">{{ summary.total_courses }}</div>
+    <div class="stat-sub">{{ summary.completed }} completed &middot; {{ summary.pending }} pending</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Completion Rate</div>
+    {% set completion_pct = ((summary.completed / summary.total_courses * 100) if summary.total_courses else 0) | round(1) %}
+    <div class="stat-value amber">{{ completion_pct }}%</div>
+    <div class="progress-track"><div class="progress-fill" style="width:{{ completion_pct }}%"></div></div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Learning Health Score</div>
+    <div class="stat-value teal">{{ health.score }}</div>
+    <div class="stat-sub">{{ health.label }} &middot; {{ health.streak_days }}-day streak</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Total Study Hours</div>
+    <div class="stat-value">{{ summary.total_hours }}</div>
+    <div class="stat-sub">across all enrolled courses</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:24px;">
+  <div class="card">
+    <h3>Weekly study hours</h3>
+    <div id="weeklyChart"></div>
+  </div>
+  <div class="card">
+    <h3>Monthly progress</h3>
+    <div id="monthlyChart"></div>
+  </div>
+</div>
+
+<div class="grid grid-3">
+  <div class="card">
+    <h3>Skill snapshot</h3>
+    <div id="radarChart"></div>
+    <a href="{{ url_for('skills.skills') }}" class="btn btn-ghost btn-sm" style="margin-top:8px;">Update skill ratings</a>
+  </div>
+
+  <div class="card">
+    <h3>Recommended next</h3>
+    {% if recommendations %}
+      {% for rec in recommendations %}
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; {{ 'border-bottom:1px solid var(--border);' if not loop.last }}">
+          <div>
+            <div style="font-weight:600; font-size:0.88rem;">{{ rec.name }}</div>
+            <div style="font-size:0.78rem; color:var(--text-faint);">{{ rec.domain }} &middot; {{ rec.duration_hours }}h</div>
+          </div>
+          <form method="POST" action="{{ url_for('courses.enroll', course_id=rec.course_id) }}">
+            <button class="btn btn-ghost btn-sm" type="submit">Enroll</button>
+          </form>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">🧭</div>
+        {% if current_user.career_goal %}
+          You're all caught up on this path!
+        {% else %}
+          Set a career goal in your profile to get recommendations.
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Active goals</h3>
+    {% if active_goals %}
+      {% for g in active_goals %}
+        <div class="skill-bar-row">
+          <div class="skill-label"><span>{{ g.title }}</span><span>{{ g.current_value }}/{{ g.target_value }}</span></div>
+          <div class="progress-track"><div class="progress-fill" style="width:{{ (g.current_value / g.target_value * 100) if g.target_value else 0 }}%"></div></div>
+        </div>
+      {% endfor %}
+      <a href="{{ url_for('goals.goals') }}" class="btn btn-ghost btn-sm" style="margin-top:8px;">Manage goals</a>
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">🏁</div>
+        No active goals yet.
+        <div style="margin-top:14px;"><a href="{{ url_for('goals.goals') }}" class="btn btn-primary btn-sm">Set a goal</a></div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const plotlyConfig = {responsive: true, displayModeBar: false};
+
+var weeklyFig = {{ weekly_fig | safe }};
+var monthlyFig = {{ monthly_fig | safe }};
+var radarFig = {{ radar_fig | safe }};
+
+Plotly.newPlot('weeklyChart', weeklyFig.data, weeklyFig.layout, plotlyConfig);
+Plotly.newPlot('monthlyChart', monthlyFig.data, monthlyFig.layout, plotlyConfig);
+Plotly.newPlot('radarChart', radarFig.data, radarFig.layout, plotlyConfig);
+</script>
+{% endblock %}

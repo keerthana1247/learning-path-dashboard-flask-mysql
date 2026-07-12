@@ -1,0 +1,7 @@
+Flask==3.0.3
+mysql-connector-python==8.4.0
+Werkzeug==3.0.3
+pandas==2.2.2
+numpy==1.26.4
+plotly==5.22.0
+python-dateutil==2.9.0

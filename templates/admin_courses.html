@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Admin · Courses — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Administration</span>
+    <h1>Course catalog</h1>
+  </div>
+  <a href="{{ url_for('admin.dashboard') }}" class="btn btn-ghost">Back to overview</a>
+</div>
+
+<div class="card" style="margin-bottom:24px;">
+  <h3>Add a new course</h3>
+  <form method="POST" action="{{ url_for('admin.courses') }}">
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="name">Course name</label>
+        <input type="text" id="name" name="name" required>
+      </div>
+      <div class="field">
+        <label for="domain">Domain</label>
+        <input type="text" id="domain" name="domain" required placeholder="e.g. Data Analytics">
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="field">
+        <label for="duration_hours">Duration (hours)</label>
+        <input type="number" id="duration_hours" name="duration_hours" min="1" value="10">
+      </div>
+      <div class="field">
+        <label for="difficulty">Difficulty</label>
+        <select id="difficulty" name="difficulty">
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" placeholder="What will learners take away from this course?"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Add course</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>All courses ({{ courses|length }})</h3>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Domain</th><th>Difficulty</th><th>Hours</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for c in courses %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>{{ c.domain }}</td>
+          <td><span class="badge badge-{{ c.difficulty|lower }}">{{ c.difficulty }}</span></td>
+          <td>{{ c.duration_hours }}h</td>
+          <td style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('edit-modal-{{ c.course_id }}').style.display='flex'">Edit</button>
+            <form method="POST" action="{{ url_for('admin.remove_course', course_id=c.course_id) }}" onsubmit="return confirm('Delete this course? This cannot be undone.');">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% for c in courses %}
+<div id="edit-modal-{{ c.course_id }}" style="display:none; position:fixed; inset:0; background:rgba(10,12,30,0.6); align-items:center; justify-content:center; z-index:100;">
+  <div class="card" style="width:100%; max-width:480px;">
+    <h3>Edit course</h3>
+    <form method="POST" action="{{ url_for('admin.edit_course', course_id=c.course_id) }}">
+      <div class="field">
+        <label>Course name</label>
+        <input type="text" name="name" value="{{ c.name }}" required>
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label>Domain</label>
+          <input type="text" name="domain" value="{{ c.domain }}" required>
+        </div>
+        <div class="field">
+          <label>Duration (hours)</label>
+          <input type="number" name="duration_hours" value="{{ c.duration_hours }}" min="1">
+        </div>
+      </div>
+      <div class="field">
+        <label>Difficulty</label>
+        <select name="difficulty">
+          {% for d in ["Beginner", "Intermediate", "Advanced"] %}
+            <option value="{{ d }}" {{ 'selected' if c.difficulty == d }}>{{ d }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea name="description">{{ c.description or '' }}</textarea>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">Save changes</button>
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('edit-modal-{{ c.course_id }}').style.display='none'">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}

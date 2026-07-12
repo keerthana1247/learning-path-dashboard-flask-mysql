@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Analytics — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Data-driven insights</span>
+    <h1>Analytics</h1>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:24px;">
+  <div class="card">
+    <h3>Learning Health Score</h3>
+    <div id="gaugeChart"></div>
+    <div class="grid grid-2" style="margin-top:4px;">
+      <div class="skill-bar-row">
+        <div class="skill-label"><span>Completion</span><span>{{ health.breakdown.completion }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ health.breakdown.completion }}%"></div></div>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-label"><span>Skill level</span><span>{{ health.breakdown.skill }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ health.breakdown.skill }}%"></div></div>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-label"><span>Consistency</span><span>{{ health.breakdown.consistency }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ health.breakdown.consistency }}%"></div></div>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-label"><span>Goal achievement</span><span>{{ health.breakdown.goals }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ health.breakdown.goals }}%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Domain-wise completed hours</h3>
+    {% if domain_fig %}
+      <div id="domainChart"></div>
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">📈</div>
+        Complete a course to see your domain breakdown here.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid grid-3">
+  <div class="card stat-card">
+    <div class="stat-label">Predicted pace</div>
+    <div class="stat-value amber">
+      {% if prediction.trend == 'improving' %}Improving
+      {% elif prediction.trend == 'declining' %}Slowing
+      {% elif prediction.trend == 'steady' %}Steady
+      {% else %}No data{% endif %}
+    </div>
+    <div class="stat-sub">avg {{ prediction.avg_weekly_hours }} hrs/week</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Overall completion</div>
+    {% set completion_pct = ((summary.completed / summary.total_courses * 100) if summary.total_courses else 0) | round(1) %}
+    <div class="stat-value teal">{{ completion_pct }}%</div>
+    <div class="progress-track"><div class="progress-fill" style="width:{{ completion_pct }}%"></div></div>
+  </div>
+  <div class="card">
+    <h3 style="margin-bottom:12px;">Strengths & gaps</h3>
+    {% if strongest_weakest.strongest %}
+      <div class="skill-bar-row">
+        <div class="skill-label"><span>Most learned — {{ strongest_weakest.strongest.name }}</span><span>{{ strongest_weakest.strongest.rating }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ strongest_weakest.strongest.rating }}%"></div></div>
+      </div>
+      <div class="skill-bar-row">
+        <div class="skill-label"><span>Weakest — {{ strongest_weakest.weakest.name }}</span><span>{{ strongest_weakest.weakest.rating }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ strongest_weakest.weakest.rating }}%"></div></div>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding:20px;">
+        <a href="{{ url_for('skills.skills') }}" class="btn btn-primary btn-sm">Take skill assessment</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const plotlyConfig = {responsive: true, displayModeBar: false};
+
+var gaugeFig = {{ gauge_fig | safe }};
+Plotly.newPlot('gaugeChart', gaugeFig.data, gaugeFig.layout, plotlyConfig);
+
+{% if domain_fig %}
+var domainFig = {{ domain_fig | safe }};
+Plotly.newPlot('domainChart', domainFig.data, domainFig.layout, plotlyConfig);
+{% endif %}
+</script>
+{% endblock %}

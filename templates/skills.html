@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Skill Assessment — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Self-assessment</span>
+    <h1>Rate your current skills</h1>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Your skill radar</h3>
+    <div id="radarChart"></div>
+  </div>
+
+  <div class="card">
+    <h3>Adjust your ratings</h3>
+    <form method="POST" action="{{ url_for('skills.skills') }}" id="skillForm">
+      {% for skill in skill_names %}
+        {% set field_id = 'rating_' ~ skill.replace(' ', '_').replace('/', '_') %}
+        <div class="skill-bar-row">
+          <div class="skill-label">
+            <span>{{ skill }}</span>
+            <span id="{{ field_id }}_val">{{ user_skills.get(skill, 0) }}</span>
+          </div>
+          <input type="range" min="0" max="100" step="5"
+                 id="{{ field_id }}" name="{{ field_id }}"
+                 value="{{ user_skills.get(skill, 0) }}"
+                 oninput="document.getElementById('{{ field_id }}_val').textContent = this.value; updateRadarPreview();">
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary" style="margin-top:8px;">Save assessment</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const skillNames = {{ skill_names|tojson }};
+var radarFig = {{ radar_fig | safe }};
+const plotlyConfig = {responsive: true, displayModeBar: false};
+
+Plotly.newPlot('radarChart', radarFig.data, radarFig.layout, plotlyConfig);
+
+function currentValues() {
+  return skillNames.map(name => {
+    const id = 'rating_' + name.replace(/ /g, '_').replace(/\//g, '_');
+    const el = document.getElementById(id);
+    return el ? parseInt(el.value) : 0;
+  });
+}
+
+function updateRadarPreview() {
+  const values = currentValues();
+  const closedValues = values.concat([values[0]]);
+  Plotly.restyle('radarChart', { r: [closedValues] });
+}
+</script>
+{% endblock %}
