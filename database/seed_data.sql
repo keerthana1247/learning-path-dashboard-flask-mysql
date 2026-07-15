@@ -7,6 +7,7 @@
 USE learning_path_db;
 
 -- ----------------------------------------------------------------------------
+<<<<<<< HEAD
 -- NOTE on the admin account: it is intentionally NOT seeded here.
 -- utils/seed.py creates it automatically the first time app.py starts
 -- (email: admin@learnpath.local / password: admin123), using Werkzeug to
@@ -14,6 +15,21 @@ USE learning_path_db;
 -- SQL would require a pre-computed hash that could go stale between
 -- Werkzeug versions — letting the app seed it avoids that entirely.
 -- ----------------------------------------------------------------------------
+=======
+-- Default admin account (email: admin@learnpath.local / password: admin123)
+-- Password hash below is a werkzeug pbkdf2:sha256 hash for "admin123"
+-- ----------------------------------------------------------------------------
+INSERT INTO users (name, email, password_hash, is_admin, career_goal)
+SELECT 'Admin', 'admin@learnpath.local',
+       'pbkdf2:sha256:600000$5qkS0i0v3g5fWn5x$b4b1b3f7f7f0c8f5a9c1b7f0a6e0e5c2f2e9c9a3b0d4e1f6a7c8b9d0e1f2a3b4',
+       TRUE, 'Data Analyst'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@learnpath.local');
+
+-- NOTE: the hash above is illustrative only. On first run, app.py's seed
+-- routine (utils/seed.py) regenerates a correct hash programmatically via
+-- Werkzeug, so the admin login always works regardless of MySQL version/
+-- hashing quirks. This SQL file is provided for reference / manual seeding.
+>>>>>>> 64c4f664f0e18636dfa5348e138327ddbc89a937
 
 -- ----------------------------------------------------------------------------
 -- Courses

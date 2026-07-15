@@ -15,6 +15,7 @@ A full-stack Flask + MySQL + Plotly web application that gives learners a person
 ```
 lpd_mysql/
 ├── app.py                     # Application factory — registers all blueprints
+<<<<<<< HEAD
 ├── wsgi.py                    # Production entry point (Gunicorn/uWSGI)
 ├── config.py                  # Flask + MySQL configuration, constants, HLS weights
 ├── requirements.txt
@@ -22,6 +23,10 @@ lpd_mysql/
 ├── docker-compose.yml         # App + MySQL, orchestrated together
 ├── Procfile                   # Start command for Render/Railway/Heroku-style hosts
 ├── .env.example                # Template for environment variables
+=======
+├── config.py                  # Flask + MySQL configuration, constants, HLS weights
+├── requirements.txt
+>>>>>>> 64c4f664f0e18636dfa5348e138327ddbc89a937
 ├── database/
 │   ├── schema.sql              # CREATE DATABASE + all CREATE TABLE statements
 │   └── seed_data.sql           # Reference SQL for course catalog + learning paths
@@ -222,6 +227,7 @@ git push -u origin main
 DROP DATABASE learning_path_db;
 ```
 then re-run `mysql -u root -p < database/schema.sql` and restart the app — the catalog and admin account will be reseeded automatically.
+<<<<<<< HEAD
 
 ---
 
@@ -273,3 +279,5 @@ The app is production-ready via **Gunicorn** (already in `requirements.txt`), wi
 
 **Note on file uploads in the cloud:** most free-tier platforms use an ephemeral filesystem, meaning uploaded certificate files in `static/uploads/certificates/` may be wiped on redeploy/restart. For a persistent production setup, either use the platform's persistent disk add-on (if available) or swap the certificate storage for cloud object storage (e.g. S3-compatible) — the Docker option above avoids this issue via a named volume.
 
+=======
+>>>>>>> 64c4f664f0e18636dfa5348e138327ddbc89a937

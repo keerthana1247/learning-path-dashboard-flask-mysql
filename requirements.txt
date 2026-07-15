@@ -5,5 +5,8 @@ pandas==2.2.2
 numpy==1.26.4
 plotly==5.22.0
 python-dateutil==2.9.0
+<<<<<<< HEAD
 gunicorn==22.0.0
 python-dotenv==1.0.1
+=======
+>>>>>>> 64c4f664f0e18636dfa5348e138327ddbc89a937

@@ -21,7 +21,11 @@ def init_pool(app):
         host=app.config["MYSQL_HOST"],
         port=app.config["MYSQL_PORT"],
         user=app.config["MYSQL_USER"],
+<<<<<<< HEAD
         password="keerthana@2007",
+=======
+        password=app.config["MYSQL_PASSWORD"],
+>>>>>>> 64c4f664f0e18636dfa5348e138327ddbc89a937
         database=app.config["MYSQL_DATABASE"],
         autocommit=False,
     )
