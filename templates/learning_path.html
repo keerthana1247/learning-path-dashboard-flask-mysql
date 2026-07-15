@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Learning Path — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">{{ career_goal or 'No goal set' }}</span>
+    <h1>Your recommended learning path</h1>
+  </div>
+  {% if not career_goal %}
+    <a href="{{ url_for('profile.profile') }}" class="btn btn-primary">Set a career goal</a>
+  {% endif %}
+</div>
+
+{% if not career_goal %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="icon">🧭</div>
+      Choose a career goal in your profile and we'll map out the recommended course order to get you there.
+    </div>
+  </div>
+{% elif not path %}
+  <div class="card">
+    <div class="empty-state">
+      <div class="icon">🚧</div>
+      No path is defined for "{{ career_goal }}" yet. Check back soon.
+    </div>
+  </div>
+{% else %}
+  <div class="grid grid-2">
+    <div class="card">
+      <h3>Path for {{ career_goal }}</h3>
+      <div class="path-rail">
+        {% for step in path %}
+          <div class="path-step">
+            <div class="path-node {{ 'done' if step.status == 'Completed' else ('active' if step.status == 'In Progress' else '') }}">
+              {% if step.status == 'Completed' %}✓{% else %}{{ step.step_order }}{% endif %}
+            </div>
+            <div class="path-content">
+              <div class="step-title">{{ step.name }}</div>
+              <div class="step-meta">{{ step.domain }} &middot; {{ step.duration_hours }}h &middot; {{ step.difficulty }}</div>
+              {% if step.status != 'Not Started' %}
+                <div class="progress-track" style="max-width:220px;"><div class="progress-fill" style="width:{{ step.progress_percent }}%"></div></div>
+              {% endif %}
+            </div>
+            <div>
+              {% if step.status == 'Not Started' %}
+                <form method="POST" action="{{ url_for('courses.enroll', course_id=step.course_id) }}">
+                  <button type="submit" class="btn btn-ghost btn-sm">Start</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card" style="align-self:start;">
+      <h3>Up next</h3>
+      {% if recommendations %}
+        {% for rec in recommendations %}
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; {{ 'border-bottom:1px solid var(--border);' if not loop.last }}">
+            <div>
+              <div style="font-weight:600; font-size:0.88rem;">{{ rec.name }}</div>
+              <div style="font-size:0.78rem; color:var(--text-faint);">Step {{ rec.step_order }} &middot; {{ rec.duration_hours }}h</div>
+            </div>
+            <form method="POST" action="{{ url_for('courses.enroll', course_id=rec.course_id) }}">
+              <button class="btn btn-primary btn-sm" type="submit">Enroll</button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <div class="icon">🎉</div>
+          You've enrolled in every step of this path!
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

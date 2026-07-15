@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Courses — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Course catalog</span>
+    <h1>Browse & manage courses</h1>
+  </div>
+</div>
+
+<div style="margin-bottom:18px;">
+  <a href="{{ url_for('courses.courses') }}" class="chip-filter {{ 'active' if not current_domain }}">All</a>
+  {% for d in domains %}
+    <a href="{{ url_for('courses.courses', domain=d) }}" class="chip-filter {{ 'active' if current_domain == d }}">{{ d }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Course</th>
+        <th>Domain</th>
+        <th>Difficulty</th>
+        <th>Duration</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in courses %}
+        {% set enr = enrolled.get(c.course_id) %}
+        <tr>
+          <td><strong>{{ c.name }}</strong><div style="font-size:0.78rem; color:var(--text-faint); max-width:280px;">{{ c.description }}</div></td>
+          <td>{{ c.domain }}</td>
+          <td><span class="badge badge-{{ c.difficulty|lower }}">{{ c.difficulty }}</span></td>
+          <td>{{ c.duration_hours }}h</td>
+          <td>
+            {% if enr %}
+              {% if enr.status == 'Completed' %}<span class="badge badge-completed">Completed</span>
+              {% elif enr.status == 'In Progress' %}<span class="badge badge-progress">In Progress</span>
+              {% else %}<span class="badge badge-pending">Not Started</span>{% endif %}
+            {% else %}
+              <span class="badge badge-pending">Not Enrolled</span>
+            {% endif %}
+          </td>
+          <td style="min-width:140px;">
+            {% if enr %}
+              <div class="progress-track"><div class="progress-fill" style="width:{{ enr.progress_percent }}%"></div></div>
+              <div style="font-size:0.75rem; color:var(--text-faint); margin-top:4px;">{{ enr.progress_percent }}%</div>
+            {% else %}
+              &mdash;
+            {% endif %}
+          </td>
+          <td>
+            {% if enr %}
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('progress-modal-{{ c.course_id }}').style.display='flex'">Update</button>
+            {% else %}
+              <form method="POST" action="{{ url_for('courses.enroll', course_id=c.course_id) }}">
+                <button type="submit" class="btn btn-primary btn-sm">Enroll</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% for c in courses %}
+  {% set enr = enrolled.get(c.course_id) %}
+  {% if enr %}
+  <div id="progress-modal-{{ c.course_id }}" style="display:none; position:fixed; inset:0; background:rgba(10,12,30,0.6); align-items:center; justify-content:center; z-index:100;">
+    <div class="card" style="width:100%; max-width:380px;">
+      <h3>Update progress — {{ c.name }}</h3>
+      <form method="POST" action="{{ url_for('courses.update_progress', course_id=c.course_id) }}">
+        <div class="field">
+          <label>Progress (%)</label>
+          <input type="number" name="progress_percent" min="0" max="100" value="{{ enr.progress_percent }}" required>
+        </div>
+        <div class="field">
+          <label>Hours studied this session</label>
+          <input type="number" name="hours_spent" min="0" step="0.5" value="1">
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">Save</button>
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('progress-modal-{{ c.course_id }}').style.display='none'">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+{% endfor %}
+
+{% endblock %}

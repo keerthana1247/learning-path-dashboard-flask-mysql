@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Admin — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Administration</span>
+    <h1>Admin overview</h1>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <a href="{{ url_for('admin.users') }}" class="btn btn-ghost">View users</a>
+    <a href="{{ url_for('admin.courses') }}" class="btn btn-primary">Manage courses</a>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-bottom:24px;">
+  <div class="card stat-card">
+    <div class="stat-label">Total learners</div>
+    <div class="stat-value">{{ total_users }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Courses in catalog</div>
+    <div class="stat-value teal">{{ total_courses }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Total enrollments</div>
+    <div class="stat-value">{{ total_enrollments }}</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Completions</div>
+    <div class="stat-value amber">{{ total_completions }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Learners by career goal</h3>
+  <table>
+    <thead><tr><th>Career goal</th><th>Learners</th></tr></thead>
+    <tbody>
+      {% for goal, count in goal_counts.items() %}
+        <tr>
+          <td>{{ goal }}</td>
+          <td style="min-width:200px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div class="progress-track" style="flex:1;"><div class="progress-fill" style="width:{{ (count / total_users * 100) if total_users else 0 }}%"></div></div>
+              <span style="font-family:var(--font-mono); font-size:0.85rem;">{{ count }}</span>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

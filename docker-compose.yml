@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-learning_path_db}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Only the schema is auto-applied on first container start — course
+      # catalog, learning paths, and the admin account are seeded by the
+      # Flask app itself (utils/seed.py) so the admin password hash is
+      # generated correctly at runtime rather than hard-coded in SQL.
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-rootpassword}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-learning_path_db}
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-key}
+      FLASK_DEBUG: "0"
+    ports:
+      - "5000:5000"
+    volumes:
+      - certificates_data:/app/static/uploads/certificates
+
+volumes:
+  mysql_data:
+  certificates_data:

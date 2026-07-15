@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Goals — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Stay accountable</span>
+    <h1>Goal tracking</h1>
+  </div>
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+  <div class="card">
+    <h3>New goal</h3>
+    <form method="POST" action="{{ url_for('goals.goals') }}">
+      <div class="field">
+        <label for="title">Goal title</label>
+        <input type="text" id="title" name="title" required placeholder="e.g. Finish Pandas for Data Analysis">
+      </div>
+      <div class="grid grid-2">
+        <div class="field">
+          <label for="goal_type">Type</label>
+          <select id="goal_type" name="goal_type">
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="target_value">Target (courses/hours)</label>
+          <input type="number" id="target_value" name="target_value" min="1" value="1" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Add goal</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Weekly goals</h3>
+    {% if weekly_goals %}
+      {% for g in weekly_goals %}
+        <div class="skill-bar-row">
+          <div class="skill-label">
+            <span>{{ g.title }} {% if g.completed %}<span class="badge badge-completed">Done</span>{% endif %}</span>
+            <span>{{ g.current_value }}/{{ g.target_value }}</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="width:{{ (g.current_value / g.target_value * 100) if g.target_value else 0 }}%"></div></div>
+          <div style="display:flex; gap:8px; margin-top:8px;">
+            <form method="POST" action="{{ url_for('goals.goal_progress', goal_id=g.goal_id) }}" style="display:flex; gap:6px;">
+              <input type="number" name="current_value" min="0" value="{{ g.current_value }}" style="width:70px; padding:6px 8px;">
+              <button type="submit" class="btn btn-ghost btn-sm">Update</button>
+            </form>
+            <form method="POST" action="{{ url_for('goals.goal_delete', goal_id=g.goal_id) }}">
+              <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">No weekly goals yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="section-title">Monthly goals</div>
+<div class="card">
+  {% if monthly_goals %}
+    <table>
+      <thead><tr><th>Goal</th><th>Progress</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+      {% for g in monthly_goals %}
+        <tr>
+          <td>{{ g.title }}</td>
+          <td style="min-width:180px;">
+            <div class="progress-track"><div class="progress-fill" style="width:{{ (g.current_value / g.target_value * 100) if g.target_value else 0 }}%"></div></div>
+            <div style="font-size:0.75rem; color:var(--text-faint); margin-top:4px;">{{ g.current_value }}/{{ g.target_value }}</div>
+          </td>
+          <td>{% if g.completed %}<span class="badge badge-completed">Achieved</span>{% else %}<span class="badge badge-progress">In progress</span>{% endif %}</td>
+          <td>
+            <div style="display:flex; gap:8px;">
+              <form method="POST" action="{{ url_for('goals.goal_progress', goal_id=g.goal_id) }}" style="display:flex; gap:6px;">
+                <input type="number" name="current_value" min="0" value="{{ g.current_value }}" style="width:70px; padding:6px 8px;">
+                <button type="submit" class="btn btn-ghost btn-sm">Update</button>
+              </form>
+              <form method="POST" action="{{ url_for('goals.goal_delete', goal_id=g.goal_id) }}">
+                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">No monthly goals yet.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

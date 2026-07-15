@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Certificates — LearnPath{% endblock %}
+{% block content %}
+
+<div class="topbar">
+  <div>
+    <span class="eyebrow">Portfolio</span>
+    <h1>Certificates</h1>
+  </div>
+</div>
+
+<div class="grid grid-2" style="align-items:start;">
+  <div class="card">
+    <h3>Upload a certificate</h3>
+    <form method="POST" action="{{ url_for('certificates.certificates') }}" enctype="multipart/form-data">
+      <div class="field">
+        <label for="title">Certificate title</label>
+        <input type="text" id="title" name="title" required placeholder="e.g. Python for Data Science">
+      </div>
+      <div class="field">
+        <label for="platform">Platform</label>
+        <select id="platform" name="platform">
+          {% for p in ["HP LIFE", "IBM SkillsBuild", "CodeAlpha", "Thiranex", "Coursera", "Udemy", "Other"] %}
+            <option value="{{ p }}">{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="certificate_file">File (PDF, PNG, or JPG)</label>
+        <input type="file" id="certificate_file" name="certificate_file" accept=".pdf,.png,.jpg,.jpeg" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Your portfolio ({{ certificates|length }})</h3>
+    {% if certificates %}
+      {% for cert in certificates %}
+        <div class="certificate-card" style="margin-bottom:12px;">
+          <div class="cert-icon">📄</div>
+          <div class="cert-info">
+            <div class="cert-title">{{ cert.title }}</div>
+            <div class="cert-meta">{{ cert.platform }} &middot; {{ cert.uploaded_at.strftime('%b %d, %Y') }}</div>
+          </div>
+          <a href="{{ url_for('static', filename='uploads/certificates/' + cert.filename) }}" target="_blank" class="btn btn-ghost btn-sm">View</a>
+          <form method="POST" action="{{ url_for('certificates.delete_certificate', cert_id=cert.certificate_id) }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="icon">🏅</div>
+        No certificates uploaded yet.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
