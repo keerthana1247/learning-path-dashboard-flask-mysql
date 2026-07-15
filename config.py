@@ -8,15 +8,13 @@ instead of editing this file.
 """
 import os
 
-<<<<<<< HEAD
+
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except ImportError:
     pass
 
-=======
->>>>>>> 64c4f664f0e18636dfa5348e138327ddbc89a937
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
